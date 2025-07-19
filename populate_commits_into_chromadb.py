@@ -97,7 +97,7 @@ def add_to_chromadb(
 ):
     """Chunks all n commits and inserts them to a chromaDB."""
 
-    settings.reload()
+    #settings.reload()
 
     logger.info("*** Creating chunks from logs based on pipeline stages...")
     chunks = chunk_git_commits(no_of_commits, branch, git_repo_dir)

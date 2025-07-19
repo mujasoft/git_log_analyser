@@ -1,6 +1,6 @@
 # Git Log Analyser
 
-A CLI tool that uses AI to analyze Git commit history and extract meaningful insights — without manually reading through hundreds of commits.
+A CLI tool that uses AI to analyze git commit history and extract meaningful insights — without manually reading through hundreds of commits.
 
 ---
 

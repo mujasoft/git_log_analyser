@@ -12,5 +12,22 @@ n_relevant_results = 10
 [default.questions]
 question1 = "Whose is the most frequent author?"
 question2 = "Can you summarize all the commits?"
-question3 = "Can you tabulate a table of the different types of commits?" 
+question3 = "Can you tabulate a table of the different types of commits?"
+question4 = "What is the single biggest most meaninful commit?"
+
+[vscode]
+
+persist_dir = "./chroma_store"
+collection_name = "commits"
+ollama_url = "http://localhost:11434/api/generate"
+model_name = "mistral"
+no_of_commits = 50
+branch = "main"
+git_repo_dir = "~/Desktop/development/vscode"
+n_relevant_results = 10
+
+[vscode.questions]
+question1 = "Whose is the most frequent author?"
+question2 = "Can you summarize all the commits?"
+question3 = "Can you tabulate a table of the different types of commits?"
 question4 = "What is the single biggest most meaninful commit?"
