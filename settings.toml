@@ -4,9 +4,9 @@ persist_dir = "./chroma_store"
 collection_name = "jenkins_logs"
 ollama_url = "http://localhost:11434/api/generate"
 model_name = "mistral"
-n_results = 3
-no_of_threads = 4
-log_folder = "data"
+no_of_commits = 10
+branch = "main"
+git_repo_dir = "/Users/mujaheedkhan/Desktop/development/brew"
 
 
 [questions]

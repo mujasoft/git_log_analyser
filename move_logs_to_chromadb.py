@@ -29,6 +29,7 @@ import chromadb
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sentence_transformers import SentenceTransformer
 import typer
+from git import Repo
 
 # Setup logging.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s -\
@@ -45,76 +46,24 @@ and embed them into a ChromaDB for fast retrieval."
 )
 
 
-def chunk_jenkins_log(filepath: str, marker_regex: str):
-    """Given a file, it returns chunks based on stage.
+def chunk_git_commits(no_of_commits: int, branch: str, git_repo_dir: str):
 
-    Args:
-        filepath (str): location of file of interest.
-        marker_regex (str): a regex string. Tailored to jenkinsfile atm.
-
-    Returns:
-        list[dictionary]: returns a list of dictionaries.
-    """
+    repo = Repo(git_repo_dir)
+    commits = list(repo.iter_commits(branch, max_count=no_of_commits))
 
     chunks = []
-    current_chunk = []
-    current_stage = "unknown"
 
-    with open(filepath, "r") as f:
-        lines = f.readlines()
+    for commit in commits:
 
-    for line in lines:
-        match = re.search(marker_regex, line)
-        if match:
-            # Save the previous chunk
-            if current_chunk:
-                chunks.append({
-                    "text": ''.join(current_chunk),
-                    "stage": current_stage,
-                    "source": filepath
-                })
-                current_chunk = []
-            current_stage = match.group(1).strip()
-
-        current_chunk.append(line)
-
-    # Save the last chunk
-    if current_chunk:
-        chunks.append({
-            "text": ''.join(current_chunk),
-            "stage": current_stage,
-            "source": filepath
-        })
+        commit_dict = {
+            "hexsha": commit.hexsha,
+            "author": commit.author.name,
+            "msg": commit.message,
+            "committed_date": commit.committed_date
+        }
+        chunks.append(commit_dict)
 
     return chunks
-
-
-def chunk_all_logs(log_dir: str = "data/logs", max_workers: int = 4):
-    """Goes through all logs in given folder and breaks them into chunks.
-
-    This can be parallelized. The default number of threads is '4'.
-
-    Args:
-        log_dir (str, optional): Location of logs. Defaults to "data/logs".
-        max_workers (int, optional): Number of parallel threads. Defaults to 4.
-
-    Returns:
-        list[dictionary]: returns all chunks in a list.
-    """
-
-    all_chunks = []
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = []
-        for file in Path(log_dir).rglob("*.txt"):
-            futures.append(executor.submit(chunk_jenkins_log, str(file),
-                           r'\[Pipeline\] stage: (.+)'))
-
-        for future in as_completed(futures):
-            file_chunks = future.result()
-            all_chunks.extend(file_chunks)
-
-    return all_chunks
 
 
 @app.command()
@@ -123,15 +72,17 @@ def add_to_chromadb(
                                              help="Path to local store."),
     collection_name: str = typer.Option(settings.system_setup.collection_name,
                                         help="A helpful name for collection."),
-    log_folder: str = typer.Option(settings.system_setup.log_folder,
-                                   help="Location of log folder."),
-    max_workers: int = typer.Option(settings.system_setup.no_of_threads,
-                                    help="No. of threads used to chunk files.")
+    git_repo_dir: str = typer.Option(settings.git_repo_dir,
+                                     help="Location of log folder."),
+    no_of_commits: int = typer.Option(settings.system_setup.no_of_commits,
+                                      help="No. of chunks."),
+    branch: int = typer.Option(settings.no_of_commits,
+                               help="No. of commits.")
 ):
     """Chunks all the logs and inserts them to a chromaDB."""
 
     logger.info("*** Creating chunks from logs based on pipeline stages...")
-    chunks = chunk_all_logs(log_folder, max_workers)
+    chunks = chunk_git_commits(no_of_commits, branch, git_repo_dir)
     logger.info("*** Done")
 
     # Initialize ChromaDB client (local store)
@@ -146,15 +97,16 @@ def add_to_chromadb(
     logger.info(f"*** Embed and add chunks to \"{local_chromadb_store}\"")
     # Embed and add to ChromaDB
     for idx, chunk in enumerate(chunks):
-        embedding = model.encode(chunk["text"]).tolist()
+        embedding = model.encode(chunk["msg"]).tolist()
         collection.add(
-            documents=[chunk["text"]],
+            documents=[chunk["msg"]],
             embeddings=[embedding],
             metadatas=[{
-                "stage": chunk["stage"],
-                "source": chunk["source"]
+                "author": chunk["author"],
+                "committed_date": chunk["committed_date"],
+                "hexsha": chunks["hexsha"]
             }],
-            ids=[f"log_chunk_{idx}"]
+            ids=[f"commit_{idx}_{chunk['hexsha']}"]
         )
     logger.info("*** Done")
 
