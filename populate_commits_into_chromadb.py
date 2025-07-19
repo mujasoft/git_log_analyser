@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from datetime.datetime import fromtimestamp
+from datetime import datetime
 import logging
 
 import chromadb
@@ -70,7 +70,7 @@ def chunk_git_commits(no_of_commits: int, branch: str, git_repo_dir: str):
 
     for commit in commits:
         ts_epoch = commit.committed_date
-        ts = fromtimestamp(ts_epoch).strftime('%Y-%m-%d %H:%M:%S')
+        ts = datetime.fromtimestamp(ts_epoch).strftime('%Y-%m-%d %H:%M:%S')
         commit_dict = {
             "hexsha": commit.hexsha,
             "author": commit.author.name,
@@ -95,7 +95,7 @@ def add_to_chromadb(
     branch: str = typer.Option(settings.branch,
                                help="Name of branch.")
 ):
-    """Chunks all the logs and inserts them to a chromaDB."""
+    """Chunks all n commits and inserts them to a chromaDB."""
 
     settings.reload()
 

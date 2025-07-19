@@ -126,6 +126,11 @@ Q.: Can you tabulate a table of the different types of commits?
 
 ---
 
+## TODO
+
+- add unit tests
+- add output options such as json or yaml
+
 ## License
 
 MIT License — see [LICENSE](./LICENSE)
