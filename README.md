@@ -1,110 +1,139 @@
+# Git Log Analyser
 
-# Jenkins AI Log Analyser
+A CLI tool that uses AI to analyze Git commit history and extract meaningful insights — without manually reading through hundreds of commits.
 
-A CLI tool that uses AI to intelligently analyze Jenkins logs by segmenting, embedding, and answering natural language questions.
+---
 
-CI/CD pipelines generate massive amounts of logs — much of it repetitive, noisy, and hard to digest. This tool streamlines log analysis by using embeddings and a local LLM to summarize pipeline behavior, highlight failure patterns, and answer questions with context-aware insight.
+## 🔍 Why This Exists
 
-## Why This Exists
+You want to understand what’s going on in a codebase, but reading commit logs is tedious and time-consuming.
 
-- Configure once — no need to frequently modify code
-- Easy to run, CI/CD friendly, and CLI-based
-- Each component is Unix-like: it does one thing well
+**This tool solves that.**
 
-## Technical Summary
+- Configure once — no need to modify the code
+- Simple CLI interface, CI/CD-ready
+- Each component is modular and focused — Unix-style design
 
-This tool reads Jenkins logs, segments them into meaningful pipeline stages, embeds them with a transformer model, and stores them in a local ChromaDB vector database. It then sends queries to a local LLM (e.g., Mistral) via Ollama to answer questions based on log content.
+---
 
-## Tool Overview
+## How It Works
 
-The tool is composed of two scripts:
+This tool:
+1. Connects to any Git repository
+2. Parses and embeds commit logs using `SentenceTransformers`
+3. Stores commit vectors in a local **ChromaDB**
+4. Answers natural-language questions about the commit history using a local LLM (via **Ollama**)
 
-1. move_logs_to_chromadb.py  
-   Segments logs, embeds them with SentenceTransformers, and stores them in ChromaDB.  
-   Driven via CLI (Typer) or config (settings.toml).
+---
 
-2. analyse_logs.py  
-   Reads questions from the same config file and sends them to the local LLM for answers.
+##  Components
 
-## Configuration (settings.toml)
+### `populate_commits_into_chromadb.py`
+- Parses commits using `GitPython`
+- Embeds commit messages
+- Stores them into ChromaDB for retrieval
+- CLI-friendly via `Typer` or fully config-driven via `settings.toml`
+
+### `analyse_commits.py`
+- Loads your configured questions
+- Retrieves relevant commit context from ChromaDB
+- Sends the question + context to your local LLM (e.g., Mistral)
+- Prints concise, eloquent answers
+
+---
+
+## 🛠 Configuration
+
+All runtime settings live in a single file: `settings.toml`
 
 ```toml
-[system_setup]
+[default]
 persist_dir = "./chroma_store"
-collection_name = "jenkins_logs"
+collection_name = "commits"
 ollama_url = "http://localhost:11434/api/generate"
 model_name = "mistral"
-n_results = 3
-no_of_threads = 4
-log_folder = "data"
+no_of_commits = 50
+branch = "main"
+git_repo_dir = "~/Desktop/development/brew"
+n_relevant_results = 10
 
-[questions]
-question1 = "What is the summary of the results so far?"
-question2 = "How often did the checkout phase fail?"
-question3 = "Can you tabulate how often the different phases pass or fail?"
-question4 = "What seems to be the most common error?"
+[default.questions]
+question1 = "Who is the most frequent author?"
+question2 = "Can you summarize all the commits?"
+question3 = "Can you tabulate a table of the different types of commits?"
 ```
 
-You can modify, add, or remove questions in the [questions] section without touching the code.
+> You can modify, add, or remove questions anytime — no code changes required.
+
+---
 
 ## Usage
 
-1. Start your local LLM
-
+### 1. Start your local LLM
 ```bash
 ollama run mistral
 ```
 
-2. Update your settings
-
+### 2. Configure your settings
 ```bash
 vim settings.toml
 ```
 
-3. Run the full pipeline
+### 3. Run the tool
+```bash
+python3 populate_commits_into_chromadb.py add-to-chromadb
+python3 analyse_commits.py
+```
 
+Or combine both steps into a script:
 ```bash
 ./run.sh
 ```
 
-This will:
-- Chunk and embed your logs
-- Ask questions and print intelligent answers based on the logs
+---
 
-## Example Output
+## Sample Output
 
 ```text
-Q.: How often did the checkout phase fail?
->>ANS: The Checkout phase failed three times due to an "Unknown error exit code: 1".
+Q.: Who is the most frequent author?
+>>ANS: The most frequent contributor is BrewTestBot, responsible for over 40% of recent commits.
 
-Q.: Can you tabulate how often the different phases pass or fail?
+Q.: Can you summarize all the commits?
+>>ANS: The commits largely focus on dependency updates, auto-generated documentation, and a few feature merges related to Homebrew package handling.
+
+Q.: Can you tabulate a table of the different types of commits?
 >>ANS:
-| Run | Phase | Result |
-|-----|-------|--------|
-| 1   | Test  | Passed |
-| 2   | Test  | Passed |
-| 3   | Test  | Passed |
-
-Q.: What seems to be the most common error?
->>ANS: An "Unknown error" in the Checkout stage with exit code 1 appears frequently.
+| Type           | Count |
+|----------------|-------|
+| Merge          | 12    |
+| Feature        | 5     |
+| Auto-generated | 18    |
+| Docs           | 3     |
 ```
+
+---
 
 ## Requirements
 
 - Python 3.8+
-- chromadb
-- dynaconf
-- typer
-- requests
-- sentence-transformers
-- Ollama (optional, for local LLM)
+- [`chromadb`](https://pypi.org/project/chromadb/)
+- [`dynaconf`](https://www.dynaconf.com/)
+- [`typer`](https://typer.tiangolo.com/)
+- [`requests`](https://docs.python-requests.org/en/master/)
+- [`sentence-transformers`](https://www.sbert.net/)
+- [`GitPython`](https://gitpython.readthedocs.io/en/stable/)
+- [`ollama`](https://ollama.com) (optional but recommended for local LLM inference)
+
+---
 
 ## License
 
-MIT License – see [LICENSE](./LICENSE)
+MIT License — see [LICENSE](./LICENSE)
+
+---
 
 ## Author
 
-Mujaheed Khan  
+**Mujaheed Khan**  
 DevOps | Python | Automation | CI/CD  
-GitHub: https://github.com/mujasoft
+GitHub: [github.com/mujasoft](https://github.com/mujasoft)
