@@ -89,15 +89,13 @@ def add_to_chromadb(
     collection_name: str = typer.Option(settings.collection_name,
                                         help="A helpful name for collection."),
     git_repo_dir: str = typer.Option(settings.git_repo_dir,
-                                     help="Location of log folder."),
+                                     help="Location of git repo."),
     no_of_commits: int = typer.Option(settings.no_of_commits,
                                       help="No. of chunks."),
     branch: str = typer.Option(settings.branch,
                                help="Name of branch.")
 ):
     """Chunks all n commits and inserts them to a chromaDB."""
-
-    #settings.reload()
 
     logger.info("*** Creating chunks from logs based on pipeline stages...")
     chunks = chunk_git_commits(no_of_commits, branch, git_repo_dir)
