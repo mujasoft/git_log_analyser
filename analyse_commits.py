@@ -26,7 +26,7 @@ from chromadb.config import Settings
 from dynaconf import Dynaconf
 import requests
 from sentence_transformers import SentenceTransformer
-
+from pprint import pprint
 import typer
 
 # Load typer.
@@ -73,7 +73,7 @@ def ask_question(query: str) -> str:
         query_embeddings=[query_embedding],
         n_results=n_relevant_results
     )
-
+    pprint(results)
     retrieved_docs = results["documents"][0]
     contexts = "\n-----------\n".join(retrieved_docs)
 
@@ -86,6 +86,8 @@ def ask_question(query: str) -> str:
 
     Question: {query}
     """
+
+    pprint(full_prompt)
 
     # Send request to local LLM server
     payload = {

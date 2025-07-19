@@ -28,6 +28,7 @@ from dynaconf import Dynaconf
 from git import Repo
 from sentence_transformers import SentenceTransformer
 import typer
+from pprint import pformat
 
 # Setup logging.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s -\
@@ -68,13 +69,15 @@ def chunk_git_commits(no_of_commits: int, branch: str, git_repo_dir: str):
     chunks = []
 
     for commit in commits:
+
         ts_epoch = commit.committed_date
         ts = datetime.fromtimestamp(ts_epoch).strftime('%Y-%m-%d %H:%M:%S')
         commit_dict = {
             "hexsha": commit.hexsha,
             "author": commit.author.name,
             "msg": commit.message,
-            "committed_date": ts
+            "committed_date": ts,
+            "diff": commit.diff()
         }
         chunks.append(commit_dict)
 
@@ -114,7 +117,7 @@ def add_to_chromadb(
     for idx, chunk in enumerate(chunks):
         embedding = model.encode(chunk["msg"]).tolist()
         collection.add(
-            documents=[chunk["msg"]],
+            documents=[pformat(chunk)],
             embeddings=[embedding],
             metadatas=[{
                 "author": chunk["author"],
