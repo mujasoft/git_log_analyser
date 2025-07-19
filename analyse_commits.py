@@ -27,12 +27,20 @@ from dynaconf import Dynaconf
 import requests
 from sentence_transformers import SentenceTransformer
 
+import typer
+
+# Load typer.
+app = typer.Typer(
+    help="Analyse git commits without having to read them manually.\n\n\
+        This script has no CLI options. You are meant to fill out a\
+            configuration file with the questions you want answered."
+)
+
 settings = Dynaconf(
     settings_files=["settings.toml"],
     environments=True,
     default_env="default",
 )
-settings.reload()
 
 # Extract system setup configuration
 persist_dir = settings.persist_dir
@@ -70,14 +78,14 @@ def ask_question(query: str) -> str:
     contexts = "\n-----------\n".join(retrieved_docs)
 
     # Construct full prompt for the LLM
-    full_prompt = f"""You are a world class expert at analyzing git logs \
-logs. Use the logs below to answer the question.
+    full_prompt = f"""You are a world-class expert at analyzing git logs.
+    Use the logs below to answer the question.
 
-Logs:
-{contexts}
+    Logs:
+    {contexts}
 
-Question: {query}
-"""
+    Question: {query}
+    """
 
     # Send request to local LLM server
     payload = {
@@ -89,15 +97,26 @@ Question: {query}
     response = requests.post(ollama_url, json=payload)
     return response.json().get("response", "[No response]")
 
+
 # CLI option was avoided on purpose as this tool is meant to be text driven.
 # It is far too tedious to type our questions on comandline without some
 # interactive output. The user is meant to write his/her/their questions
 # in the settings.toml and run this script.
+@app.command()
+def ask_all_questions():
+    """Read settings.toml and ask questions to local LLM.
 
+    In practical use, it's tedious to type out long-form questions directly on
+    the commandline. Instead, this tool is designed to read questions from a
+    configuration file (settings.toml), which is easier to maintain and better
+    suited for repeated or automated analysis.
+    """
 
-if __name__ == "__main__":
-    # Loop through all configured questions (alphabetical order)
     for key, value in sorted(settings.questions.items()):
         print(f"Q.: {value}")
         answer = ask_question(value)
-        print(f">>ANS: {answer}\n")
+        print(f"Ans: {answer.strip()}\n")
+
+
+if __name__ == "__main__":
+    app()
