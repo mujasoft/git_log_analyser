@@ -6,7 +6,7 @@ A CLI tool that uses AI to analyze git commit history and extract meaningful ins
 
 ## Why This Exists
 
-You want to understand what’s going on in a codebase, but reading commit logs is tedious and time-consuming.
+You want to understand what’s going on in a codebase but reading commit logs is tedious and time-consuming.
 
 **This tool solves that.**
 
@@ -130,6 +130,7 @@ Q.: Can you tabulate a table of the different types of commits?
 
 - add unit tests
 - add output options such as json or yaml
+- add a check to see if ollama+mistral is running and if they are not, perform a sys.exit()
 
 ## License
 
