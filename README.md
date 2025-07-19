@@ -4,7 +4,7 @@ A CLI tool that uses AI to analyze Git commit history and extract meaningful ins
 
 ---
 
-## 🔍 Why This Exists
+## Why This Exists
 
 You want to understand what’s going on in a codebase, but reading commit logs is tedious and time-consuming.
 
@@ -42,7 +42,7 @@ This tool:
 
 ---
 
-## 🛠 Configuration
+## Configuration
 
 All runtime settings live in a single file: `settings.toml`
 
