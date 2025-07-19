@@ -65,6 +65,7 @@ def ask_question(query: str) -> str:
     Returns:
         str: The response from the LLM.
     """
+
     # Embed the question
     query_embedding = embedder.encode(query).tolist()
 
@@ -73,21 +74,18 @@ def ask_question(query: str) -> str:
         query_embeddings=[query_embedding],
         n_results=n_relevant_results
     )
-    pprint(results)
+
     retrieved_docs = results["documents"][0]
     contexts = "\n-----------\n".join(retrieved_docs)
 
     # Construct full prompt for the LLM
-    full_prompt = f"""You are a world-class expert at analyzing git logs.
-    Use the logs below to answer the question.
-
-    Logs:
+    full_prompt = f"""You are a world-class expert at analyzing git commits.
+    You will only see the message and some metadata but will not be able to
+    see diffs.
+    Snippets:
     {contexts}
-
     Question: {query}
     """
-
-    pprint(full_prompt)
 
     # Send request to local LLM server
     payload = {
@@ -97,6 +95,13 @@ def ask_question(query: str) -> str:
     }
 
     response = requests.post(ollama_url, json=payload)
+
+    limits = {"llama3": 8000, "mistral": 4000}
+
+    if len(full_prompt) // 4 > limits[model_name]:
+        print("*** Warning: Truncated prompt detected."
+              "Not all data was included.")
+
     return response.json().get("response", "[No response]")
 
 

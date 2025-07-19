@@ -4,30 +4,28 @@ persist_dir = "./chroma_store"
 collection_name = "commits"
 ollama_url = "http://localhost:11434/api/generate"
 model_name = "mistral"
-no_of_commits = 1
+no_of_commits = 50
 branch = "main"
-git_repo_dir = "~/Desktop/development/brew"
-n_relevant_results = 10
+git_repo_dir = "~/Desktop/development/vscode"
+n_relevant_results = 3
 
 [default.questions]
-question1 = "Who is the most frequent author?"
-question2 = "Can you summarize all the commits?"
-question3 = "Can you tabulate a table of the different types of commits?"
-question4 = "Can you identify two of the most riskiest commit?"
+question1 = "Who made the most recent changes?"
+question2 = "Are multiple developers working on the same area?"
+question3 = "Which parts of the codebase are most active recently?"
 
-[vscode]
+[brew]
 
 persist_dir = "./chroma_store"
 collection_name = "commits"
 ollama_url = "http://localhost:11434/api/generate"
-model_name = "mistral"
-no_of_commits = 50
+model_name = "llama3"
+no_of_commits = 1
 branch = "main"
-git_repo_dir = "~/Desktop/development/vscode"
-n_relevant_results = 10
+git_repo_dir = "~/Desktop/development/brew"
+n_relevant_results = 3
 
-[vscode.questions]
-question1 = "Who is the most frequent author?"
-question2 = "Can you summarize all the commits in 10 lines or less?"
-question3 = "Can you tabulate a table of the different types of commits?"
-question4 = "What is the single biggest most meaninful commit?"
+[brew.questions]
+question1 = "Who made the most recent changes?"
+question2 = "Are multiple developers working on the same area?"
+question3 = "Which parts of the codebase are most active recently?"

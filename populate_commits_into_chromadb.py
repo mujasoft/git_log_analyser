@@ -25,7 +25,10 @@ import logging
 
 import chromadb
 from dynaconf import Dynaconf
-from git import Repo
+from git import Repo, NULL_TREE
+import sys
+
+
 from sentence_transformers import SentenceTransformer
 import typer
 from pprint import pformat
@@ -70,14 +73,28 @@ def chunk_git_commits(no_of_commits: int, branch: str, git_repo_dir: str):
 
     for commit in commits:
 
+        # Diffs are massive. They cannot fit into the prompt so the we only
+        # add the commit message and metadata.
+
+        # parent = commit.parents[0] if commit.parents else NULL_TREE
+        # diffs = commit.diff(parent, create_patch=True)
+
+        # diff_text = "\n".join(d.diff.decode("utf-8", errors="ignore") for d in diffs)
+
+        files_modified = list(commit.stats.files.keys())
+        files_modified_str = "\n+".join(files_modified)
+
+        stats = commit.stats.total
+        stats_str = pformat(stats)
+
+        # Join all diffs as text
         ts_epoch = commit.committed_date
         ts = datetime.fromtimestamp(ts_epoch).strftime('%Y-%m-%d %H:%M:%S')
         commit_dict = {
             "hexsha": commit.hexsha,
             "author": commit.author.name,
-            "msg": commit.message,
+            "msg": commit.message + files_modified_str + f"statistics={stats_str}",
             "committed_date": ts,
-            "diff": commit.diff()
         }
         chunks.append(commit_dict)
 

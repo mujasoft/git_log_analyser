@@ -22,9 +22,18 @@ This tool:
 1. Connects to any Git repository
 2. Parses and embeds commit logs using `SentenceTransformers`
 3. Stores commit vectors in a local **ChromaDB**
-4. Answers natural-language questions about the commit history using a local LLM (via **Ollama**)
+4. Answers natural-language questions about the commit history using a local LLM (via **llama3**)
 
----
+
+## Limitations
+This project uses RAG (Retrieval-Augmented Generation) to analyze Git commit history using a local LLM. It works well for answering questions about specific commits or patterns, as long as the context stays within the model’s token limit.
+
+However, questions like “What’s the biggest commit?” or “Which commit is the riskiest?” don’t work out of the box. These require access to all the data — and since LLMs can’t process huge datasets in a single prompt, the answers will often be incomplete or inaccurate.
+
+To handle that properly, the system needs to do some of the heavy lifting itself. For example, the LLM could suggest that a calculation is needed (like total lines changed), and the tool could run that logic separately before asking the model for insight.
+
+This has been a valuable learning experience — it shows that building useful AI tools means combining LLMs with real, thoughtful engineering. It’s not about replacing logic with AI, but getting them to work together.
+
 
 ##  Components
 
@@ -71,7 +80,8 @@ question3 = "Can you tabulate a table of the different types of commits?"
 
 ### 1. Start your local LLM
 ```bash
-ollama run mistral
+ollama run llama3
+# You can use mistral too but that has a smaller token limit
 ```
 
 ### 2. Configure your settings
