@@ -1,9 +1,8 @@
+# Git Log Analyser
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![License](https://img.shields.io/github/license/mujasoft/git_log_analyser)
 ![Status](https://img.shields.io/badge/status-WIP-orange)
 ![Demo Available](https://img.shields.io/badge/demo-available-green)
-
-# Git Log Analyser
 
 A CLI tool that uses AI to analyze git commit history and extract meaningful insights — without manually reading through hundreds of commits.
 
